@@ -18,6 +18,24 @@ Asteroid::~Asteroid()
 	
 }
 
+GameWorldData* Asteroid::networkUpdate(float dt, int asteroidID)
+{
+	return packAsteroidData(dt, asteroidID);
+}
+
+GameWorldData* Asteroid::packAsteroidData(float dt, int asteroidID)
+{
+	GameWorldData* gwdMsg = new GameWorldData;
+
+	totalGameTime += dt;
+	gwdMsg->asteroidID = asteroidID;
+	gwdMsg->timeSent = totalGameTime;
+	gwdMsg->x = asteroidSprite.getPosition().x;
+	gwdMsg->y = asteroidSprite.getPosition().y;
+
+	return gwdMsg;
+}
+
 void Asteroid::update(float dt)
 {
 	move();

@@ -5,6 +5,7 @@
 #include "PlayerDataMsg.h"
 #include <queue>
 #include <vector>
+#include "GameWorldData.h"
 
 class Connection
 {
@@ -13,9 +14,9 @@ public:
 	~Connection();
 
 	void createTCPListner();
-	PlayerDataMsg* checkConnections();
+	PlayerDataMsg* checkConnections(std::vector<GameWorldData*> gameWorldData);
 	//void acceptConnection(sf::TcpListener* tcpListener);
-	void send(PlayerDataMsg* msg, sf::TcpSocket* clientSock);
+	//void send(PlayerDataMsg* msg, sf::TcpSocket* clientSock);
 	/*void receive(sf::TcpSocket* clientSock);
 	void updatePlayers();*/
 
@@ -28,5 +29,5 @@ private:
 	sf::TcpListener tcpListenerSocket;
 	sf::SocketSelector selector;
 	std::vector<sf::TcpSocket*> clientSockets;
-	PlayerDataMsg* msgRecv = new PlayerDataMsg;
+	PlayerDataMsg msgRecv;// = new PlayerDataMsg;
 };

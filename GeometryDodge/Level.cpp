@@ -56,7 +56,7 @@ void Level::initConnection()
 	conn = new Connection();
 	conn->createTCPListner();
 	// Happens once here, then every update loop thereafter
-	conn->checkConnections();
+	//conn->checkConnections();
 }
 
 void Level::initDebugMode()
@@ -141,15 +141,28 @@ void Level::checkCurrentWave()
 
 void Level::handleInput(float dt)
 {
-	//player1->handleInput(dt);
-	//player2->handleInput(dt);
+	// THIS IS THE SERVER, IT HAS NO INPUT
 }
 
 void Level::update(float dt)
 {
-	PlayerDataMsg* msg = conn->checkConnections();
+	networkUpdateTimer += dt;
+	
+	// For recv player data
+	PlayerDataMsg* msg = nullptr;
+	// For sending game data
+	std::vector<GameWorldData*> gwdMsg;
 
 	ui->update(dt);
+
+	// Update all the asteroids
+	for (int i = 0; i < asteroids.size(); i++)
+	{
+		gwdMsg.push_back(asteroids[i]->networkUpdate(dt, i));
+		asteroids[i]->update(dt);
+	}
+
+	msg = conn->checkConnections(gwdMsg);
 
 	//player1->networkUpdate(dt, conn);
 
@@ -178,13 +191,6 @@ void Level::update(float dt)
 	}
 
 	checkCurrentWave();
-
-	// Update all the asteroids
-	for (int i = 0; i < asteroids.size(); i++)
-	{
-		asteroids[i]->update(dt);
-	}
-
 	//checkCollisions();
 }
 

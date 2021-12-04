@@ -25,11 +25,9 @@ void Connection::createTCPListner()
 	
 	// Add the listener to the selector
 	selector.add(tcpListenerSocket);
-
-	//acceptConnection(&tcpListener);
 }
 
-PlayerDataMsg* Connection::checkConnections()
+PlayerDataMsg* Connection::checkConnections(std::vector<GameWorldData*> gameWorldData)
 {
 	// Make the selector wait for data on any socket
 	if (selector.wait())
@@ -66,10 +64,10 @@ PlayerDataMsg* Connection::checkConnections()
 
 				if (selector.isReady(client))
 				{
-					sf::Socket::Status status = client.receive(msgRecv, sizeof(PlayerDataMsg), received);
-
-					if (status != sf::Socket::Done)
+					if (client.receive(&msgRecv, sizeof(PlayerDataMsg), received) != sf::Socket::Done)
 					{
+						sf::Socket::Status status = client.receive(&msgRecv, sizeof(PlayerDataMsg), received);
+
 						std::cout << "Server side error receiving using TCP!, error: " << status << "\n";
 						break;
 					}
@@ -77,11 +75,38 @@ PlayerDataMsg* Connection::checkConnections()
 					{
 						std::cout << "Server side received: " << received << " bytes\n";
 
-						std::cout << "Player ID: " << msgRecv->playerID << '\n';
-						std::cout << "Msg time sent: " << msgRecv->timeSent << '\n';
-						std::cout << "Player X: " << msgRecv->x << '\n';
-						std::cout << "Player Y: " << msgRecv->y << '\n';
+						std::cout << "Player ID: " << msgRecv.playerID << '\n'
+								  << "Msg time sent: " << msgRecv.timeSent << '\n'
+								  << "Player X: " << msgRecv.x << '\n'
+								  << "Player Y: " << msgRecv.y << '\n';
 					}
+
+					// Send all the asteroids data
+					for (int i = 0; i < gameWorldData.size(); ++i)
+					{
+						std::size_t bytesSent = 0.0f;
+
+						GameWorldData* gmd = gameWorldData[i];
+
+						// Send game world data
+						if (client.send(gmd, sizeof(GameWorldData), bytesSent) != sf::Socket::Done)
+						{
+							std::cout << "Error sending game world data from server by TCP!\n";
+							break;
+						}
+						else
+						{
+							//std::cout << "Game world data sent from Server \n";
+							std::cout << "Game world data sent from Server \n"
+									  << "Asteroid ID: " << gameWorldData[i]->asteroidID << '\n'
+									  << "Msg time sent: " << gameWorldData[i]->timeSent << '\n'
+									  << "Asteroid X: " << gameWorldData[i]->x << '\n'
+									  << "Asteroid Y: " << gameWorldData[i]->y << '\n'
+									  << "Sent to remote port: " << client.getRemotePort() << "\n"
+									  << "Bytes sent " << bytesSent << "\n";
+						}
+					}
+					
 
 					// If we received data from player 1, relay that to player 2 and vice versa
 					/*if (msgRecv->playerID == 1)
@@ -97,7 +122,7 @@ PlayerDataMsg* Connection::checkConnections()
 		}
 	}
 
-	return msgRecv;
+	return &msgRecv;
 }
 
 //void Connection::acceptConnection(sf::TcpListener* tcpListener)
@@ -113,19 +138,19 @@ PlayerDataMsg* Connection::checkConnections()
 //	}
 //}
 
-void Connection::send(PlayerDataMsg* msg, sf::TcpSocket* clientSock)
-{
-	// Send data
-	if (clientSock->send(msg, sizeof(PlayerDataMsg)) != sf::Socket::Done)
-	{
-		std::cout << "Error sending data by TCP!\n";
-		return;
-	}
-	else
-	{
-		std::cout << "Player " << msg->playerID << " data sent from server to client " << clientSock->getRemotePort() << "\n";
-	}
-}
+//void Connection::send(PlayerDataMsg* msg, sf::TcpSocket* clientSock)
+//{
+//	// Send data
+//	if (clientSock->send(msg, sizeof(PlayerDataMsg)) != sf::Socket::Done)
+//	{
+//		std::cout << "Error sending data by TCP!\n";
+//		return;
+//	}
+//	else
+//	{
+//		std::cout << "Player " << msg->playerID << " data sent from server to client " << clientSock->getRemotePort() << "\n";
+//	}
+//}
 
 //void Connection::receive(sf::TcpSocket* clientSock)
 //{

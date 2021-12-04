@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "GameWorldData.h"
 
 class Asteroid
 {
@@ -7,6 +8,8 @@ public:
 	Asteroid(sf::RenderWindow* hwnd);
 	~Asteroid();
 
+	GameWorldData* networkUpdate(float dt, int asteroidID);
+	GameWorldData* packAsteroidData(float dt, int asteroidID);
 	void update(float dt);
 	void render(sf::RenderWindow* window);
 	sf::Sprite* getAsteroidSprite();
@@ -30,4 +33,5 @@ private:
 	float randSpeed;		// Add this later if the MVP works
 	int randXPos;
 	int randYPos;
+	float totalGameTime = 0.0f;
 };
